@@ -1,0 +1,14 @@
+; ISC bind config file
+$TTL 600        ; 10 minutes
+@                       SOA     server.mydomain.com. root.mydomain.com. (
+                                42         ; serial
+                                900        ; refresh (15 minutes)
+                                60         ; retry (1 minute)
+                                604800     ; expire (1 week)
+                                43200      ; minimum (12 hours)
+                                )
+                        NS      server.mydomain.com.
+                        MX      1 server.mydomain.com.
+$TTL 302400     ; 3 days 12 hours
+@               IN      A       192.168.0.20
+*               IN      A       192.168.0.20
