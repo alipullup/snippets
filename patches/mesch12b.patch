@@ -1,0 +1,927 @@
+diff --git a/configure b/configure
+diff --git a/configure.in b/configure.in
+--- a/configure.in
++++ b/configure.in
+@@ -1,109 +1,197 @@
+ dnl Meschach autoconf script
+ dnl Copyright (C) Brook Milligan and David Stewart, 1993, 2002
+ dnl $Id: configure.in,v 1.3 1994/03/08 05:41:32 des Exp $
+-dnl
+-dnl I want to use this to see if the compiler can be made ANSI C compatible
+-dnl AC_PROG_CC_STDC
+-dnl Brook Milligan's prototype check
+-dnl Check if $(CC) supports prototypes
+-define(LOCAL_HAVE_PROTOTYPES,
+-[AC_TRY_COMPILE([function prototypes], ,
+-[extern int test (int i, double x);],
+-AC_DEFINE(HAVE_PROTOTYPES))])dnl
+-dnl
+-dnl Brook Milligan's compiler check
+-dnl Check for the sun ansi c compiler, acc
+-define(LOCAL_PROG_ACC,
+-[AC_BEFORE([$0], [AC_PROG_CPP])AC_PROVIDE([$0])dnl
+-AC_PROGRAM_CHECK(CC, acc, acc, "")])dnl
+-dnl David Stewart's modified compiler check
+-define(LOCAL_PROG_CC,
+-[AC_BEFORE([$0], [AC_PROG_CPP])AC_PROVIDE([$0])dnl
+-AC_PROGRAM_CHECK(CC, acc, acc, cc)])dnl
+-dnl
+-dnl
++
+ dnl
+ dnl ----------------------------------------------------------------------
+ dnl Start of configure.in proper
+ dnl ----------------------------------------------------------------------
+ AC_INIT(err.c)
+ AC_CONFIG_HEADER(machine.h)
+-PROGS=""
+-AC_SUBST(PROGS)dnl
+-LOCAL_PROG_ACC
+-AC_PROGRAM_CHECK(CC, cc, cc, gcc)
++AC_LANG(C)
++#LOCAL_PROG_ACC
++#AC_PROGRAM_CHECK(CC, cc, cc, gcc)
+ AC_PROG_CC
+ AC_PROG_CPP
+ AC_PROG_CC_STDC
+-AC_AIX
+-AC_MINIX
++#AC_AIX
++#AC_MINIX
+ AC_ISC_POSIX
+-dnl
+-dnl Brook Milligan's prototype check
+-dnl Check if $(CC) supports prototypes in function declarations and structures
+-define(LOCAL_HAVE_PROTOTYPES,
+-[AC_TRY_COMPILE([function prototypes], ,
+-[extern int test (int i, double x);],
+-AC_DEFINE(HAVE_PROTOTYPES))
+-AC_TRY_COMPILE([function prototypes in structures], ,
+-[struct s1 {int (*f) (int a);};
+-struct s2 {int (*f) (double a);};],
+-AC_DEFINE(HAVE_PROTOTYPES_IN_STRUCT))])dnl
+-dnl
++
++# AC_TRY_COMPILE([function prototypes in structures], ,
++# [struct s1 {int (*f) (int a);};
++# struct s2 {int (*f) (double a);};],
++# AC_DEFINE(HAVE_PROTOTYPES_IN_STRUCT))])dnl
++
++AC_DEFINE(HAVE_PROTOTYPES, [1], [Function prototypes supported])
++
++AC_DEFINE(HAVE_PROTOTYPES_IN_STRUCT, [1], [Function prototypes allowed in structures])
++
+ AC_PROG_RANLIB
+-AC_HAVE_HEADERS(memory.h)
+-AC_STDC_HEADERS
+-AC_HEADER_CHECK(complex.h, AC_DEFINE(HAVE_COMPLEX_H),)
+-AC_HEADER_CHECK(malloc.h, AC_DEFINE(HAVE_MALLOC_H),)
+-AC_HEADER_CHECK(varargs.h, AC_DEFINE(VARARGS),)
+-AC_DEFINE(NOT_SEGMENTED)
++AC_CHECK_HEADERS([memory.h])
++AC_HEADER_STDC
++AC_CHECK_HEADERS([complex.h malloc.h])
++#AC_CHECK_HEADER(complex.h, AC_DEFINE(HAVE_COMPLEX_H),)
++#AC_CHECK_HEADER(malloc.h, AC_DEFINE(HAVE_MALLOC_H),)
++AC_DEFINE([VARARGS], [], [varargs.h present])
++AC_CHECK_HEADER(varargs.h, AC_DEFINE(VARARGS),)
++AC_DEFINE([NOT_SEGMENTED], [1], [Not segemented???])
+ AC_SIZE_T
+ AC_CONST
+ AC_WORDS_BIGENDIAN
+-AC_ARG_WITH(complex, AC_DEFINE(COMPLEX))
+-AC_ARG_WITH(sparse, AC_DEFINE(SPARSE))
+-AC_ARG_WITH(all, AC_DEFINE(COMPLEX))
+-AC_ARG_WITH(all, AC_DEFINE(SPARSE))
+-AC_ARG_WITH(unroll, AC_DEFINE(VUNROLL))
+-AC_ARG_WITH(munroll, AC_DEFINE(MUNROLL))
+-AC_ARG_WITH(segmem, AC_DEFINE(SEGMENTED))
+-AC_ARG_WITH(float, AC_DEFINE(REAL_FLT))
+-AC_ARG_WITH(double, AC_DEFINE(REAL_DBL))
+-LIBS="$LIBS -lm"
+-AC_TRY_COMPILE([u_int],[#include <stdio.h>
+-#ifdef __STDC__
+-#include <stdlib.h>
+-#endif],[u_int i; i = 1;],AC_DEFINE(U_INT_DEF))
+-echo 'computing machine epsilon(s)'
+-echo $CC -o macheps dmacheps.c
+-$CC -o macheps dmacheps.c
+-AC_DEFINE_UNQUOTED(D_MACHEPS,`macheps`)
+-echo $CC -o macheps fmacheps.c
+-$CC -o macheps fmacheps.c
+-AC_DEFINE_UNQUOTED(F_MACHEPS,`macheps`)
+-echo computing M_MAX_INT
+-echo $CC -o maxint maxint.c
+-$CC -o maxint maxint.c
+-AC_DEFINE_UNQUOTED(M_MAX_INT,`maxint`)
+-echo checking char '\\0' vs. float zeros
+-AC_PROGRAM_EGREP(yes,[main() {
+-    char	*cp = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+-    double	*dp;
+-    dp = (double *)cp;
+-    if ( *dp == 0.0 ) printf("yes\n");  }
+-],AC_DEFINE(CHAR0ISDBL0))
+-AC_HAVE_FUNCS(bcopy bzero)
+-LOCAL_HAVE_PROTOTYPES
+-AC_CONFIG_FILES([makefile make.mex])
++
++AC_ARG_WITH(complex, 
++	    [AS_HELP_STRING([--with-complex],
++			    [incorporate complex functions])],
++	    [],
++	    [with_complex=no])
++AS_IF([test "x$with_complex" != xno],
++      [AC_DEFINE([COMPLEX], [1], [incorporate complex functions]),
++       AC_SUBST(WITH_COMPLEX,1)])
++
++AC_ARG_WITH(sparse, 
++	    [AS_HELP_STRING([--with-sparse],
++			    [incorporate sparse functions])],
++	    [],
++	    [with_sparse=no])
++AS_IF([test "x$with_sparse" != xno],
++      [AC_DEFINE([SPARSE], [1], [incorporate sparse functions]),
++       AC_SUBST(WITH_SPARSE,1)])
++
++AC_ARG_WITH(all, 
++	    [AS_HELP_STRING([--with-all],
++			    [incorporate sparse and complex functions])],
++	    [],
++	    [with_all=no])
++AS_IF([test "x$with_all" != xno],
++      [AC_DEFINE([COMPLEX], [1], [incorporate complex functions])
++       AC_DEFINE([SPARSE], [1], [incorporate sparse functions]),
++       AC_SUBST(WITH_COMPLEX,1)
++       AC_SUBST(WITH_SPARSE,1)])
++
++
++AC_ARG_WITH(vunroll, 
++	    [AS_HELP_STRING([--with-vunroll],
++			    [unroll low level loops on vectors])],
++	    [],
++	    [with_vunroll=no])
++AS_IF([test "x$with_vunroll" != xno],
++      [AC_DEFINE([VUNROLL], [1], [unroll low level loops on vectors])])
++
++AC_ARG_WITH(munroll, 
++	    [AS_HELP_STRING([--with-munroll],
++			    [unroll low level loops on matrices])],
++	    [],
++	    [with_munroll=no])
++AS_IF([test "x$with_munroll" != xno],
++      [AC_DEFINE([MUNROLL], [1], [unroll low level loops on matrices])])
++
++AC_ARG_WITH(float, 
++	    [AS_HELP_STRING([--with-float],
++			    [single precision])],
++	    [],
++	    [with_float=no])
++AS_IF([test "x$with_float" != xno],
++      [AC_DEFINE([REAL_FLT], [1], [single precision])])
++
++AC_ARG_WITH(double, 
++	    [AS_HELP_STRING([--with-double],
++			    [double precision])],
++	    [],
++	    [with_double=no])
++AS_IF([test "x$with_double" != xno],
++      [AC_DEFINE([REAL_DBL], [1], [double precision])])
++
++#LIBS="$LIBS -lm"
++AC_CHECK_LIB([m], [sin])
++
++# FIXME: will always define this!
++AC_DEFINE([U_INT_DEF], [], [u_int type defined])
++AC_COMPILE_IFELSE(
++    [AC_LANG_PROGRAM(
++     [#include <stdio.h>
++      #ifdef __STDC__
++      #include <stdlib.h>
++      #endif],
++     [u_int i; i = 1;])],
++     AC_DEFINE(U_INT_DEF, [1]))
++
++#AC_TRY_COMPILE([u_int],[#include <stdio.h>
++##ifdef __STDC__
++##include <stdlib.h>
++##endif],[u_int i; i = 1;],AC_DEFINE(U_INT_DEF))
++
++found_dbl_epsilon=no
++AC_MSG_CHECKING([DBL_EPSILON])
++AC_COMPILE_IFELSE(
++    [AC_LANG_PROGRAM(
++     [#include <float.h>], 
++     [float f = DBL_EPSILON;])],
++    AC_MSG_RESULT([found])
++    found_dbl_epsilon=yes,
++    AC_MSG_RESULT([not found]))
++
++AS_IF([test "x$found_dbl_epsilon" = xyes],
++      [AC_DEFINE([F_MACHEPS],[DBL_EPSILON])],
++      [AC_MSG_NOTICE([computing machine epsilon for double])
++	echo $CC -o macheps dmacheps.c
++	$CC -o macheps dmacheps.c
++	AC_DEFINE_UNQUOTED([F_MACHEPS], [`./macheps`])])
++
++found_flt_epsilon=no
++AC_MSG_CHECKING([FLT_EPSILON])
++AC_COMPILE_IFELSE(
++    [AC_LANG_PROGRAM(
++     [#include <float.h>], 
++     [float f = FLT_EPSILON;])],
++    AC_MSG_RESULT([found])
++    found_flt_epsilon=yes,
++    AC_MSG_RESULT([not found]))
++
++AS_IF([test "x$found_flt_epsilon" = xyes],
++      [AC_DEFINE([F_MACHEPS],[FLT_EPSILON])],
++      [AC_MSG_NOTICE([computing machine epsilon for float])
++	echo $CC -o macheps fmacheps.c
++	$CC -o macheps fmacheps.c
++	AC_DEFINE_UNQUOTED([F_MACHEPS], [`./macheps`])])
++
++
++
++# echo checking char '\\0' vs. float zeros
++# AC_PROGRAM_EGREP(yes,[main() {
++#     char	*cp = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
++#     double	*dp;
++#     dp = (double *)cp;
++#     if ( *dp == 0.0 ) printf("yes\n");  }
++# ],AC_DEFINE(CHAR0ISDBL0))
++
++AC_DEFINE([CHAR0ISDBL0], [], [char '\0' is same as float zeros])
++
++AC_MSG_CHECKING([char '\0' vs. float zeros])
++AC_RUN_IFELSE(
++    [AC_LANG_PROGRAM(
++     [], 
++     [char	*cp = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
++      double	*dp;
++      dp = (double *)cp;
++      if ( *dp == 0.0 ) return 0; else return 1;])],
++    AC_MSG_RESULT([same])
++    AC_DEFINE(CHAR0ISDBL0),
++    AC_MSG_RESULT([different]),
++    AC_MSG_RESULT([different (cross compiling)]))
++
++AC_CHECK_FUNCS([bcopy bzero])
++#LOCAL_HAVE_PROTOTYPES
++AC_CONFIG_FILES([makefile])
+ AC_OUTPUT
+-echo "Extensions to basic version: use configure --with-opt1 --with-opt2"
+-echo "  Option:"
+-echo "    --with-complex     incorporate complex functions"
+-echo "    --with-sparse      incorporate sparse matrix functions"
+-echo "    --with-all         both of the above"
+-echo "    --with-unroll      unroll low level loops on vectors"
+-echo "    --with-munroll     unroll low level loops on matrices"
+-echo "    --with-float       single precision"
+-echo "    --with-double      double precision (default)"
+-echo "Re-run configure with these options if you want them"
++# echo "Extensions to basic version: use configure --with-opt1 --with-opt2"
++# echo "  Option:"
++# echo "    --with-complex     incorporate complex functions"
++# echo "    --with-sparse      incorporate sparse matrix functions"
++# echo "    --with-all         both of the above"
++# echo "    --with-unroll      unroll low level loops on vectors"
++# echo "    --with-munroll     unroll low level loops on matrices"
++# echo "    --with-float       single precision"
++# echo "    --with-double      double precision (default)"
++# echo "Re-run configure with these options if you want them"
+ # configure.in copyright (C) Brook Milligan and David Stewart, 1993, 2002
+diff --git a/machine.h b/machine.h
+deleted file mode 100644
+--- a/machine.h
++++ /dev/null
+@@ -1,193 +0,0 @@
+-/* machine.h.  Generated automatically by configure.  */
+-/* Any machine specific stuff goes here */
+-/* Add details necessary for your own installation here! */
+-
+-/* This is for use with "configure" -- if you are not using configure
+-	then use machine.van for the "vanilla" version of machine.h */
+-
+-/* Note special macros: ANSI_C (ANSI C syntax)
+-			SEGMENTED (segmented memory machine e.g. MS-DOS)
+-			MALLOCDECL (declared if malloc() etc have
+-					been declared) */
+-
+-/* #undef const */
+-
+-/* #undef MALLOCDECL */
+-#define NOT_SEGMENTED 1
+-/* #undef HAVE_COMPLEX_H */
+-#define HAVE_MALLOC_H 1
+-#define STDC_HEADERS 1
+-#define HAVE_BCOPY 1
+-#define HAVE_BZERO 1
+-#define CHAR0ISDBL0 1
+-/* #undef WORDS_BIGENDIAN */
+-#define U_INT_DEF 1
+-#define VARARGS 1
+-
+-
+-/* for basic or larger versions */
+-#define COMPLEX 1
+-#define SPARSE 1
+-
+-/* for loop unrolling */
+-/* #undef VUNROLL */
+-/* #undef MUNROLL */
+-
+-/* for segmented memory */
+-#ifndef NOT_SEGMENTED
+-#define	SEGMENTED
+-#endif
+-
+-/* if the system has malloc.h */
+-#ifdef HAVE_MALLOC_H
+-#define	MALLOCDECL	1
+-#include	<malloc.h>
+-#endif
+-
+-/* any compiler should have this header */
+-/* if not, change it */
+-#include        <stdio.h>
+-
+-
+-/* Check for ANSI C memmove and memset */
+-#ifdef STDC_HEADERS
+-
+-/* standard copy & zero functions */
+-#define	MEM_COPY(from,to,size)	memmove((to),(from),(size))
+-#define	MEM_ZERO(where,size)	memset((where),'\0',(size))
+-
+-#ifndef ANSI_C
+-#define ANSI_C 1
+-#endif
+-
+-#endif
+-
+-/* standard headers */
+-#ifdef ANSI_C
+-#include	<stdlib.h>
+-#include	<stddef.h>
+-#include	<string.h>
+-#include	<float.h>
+-#endif
+-
+-
+-/* if have bcopy & bzero and no alternatives yet known, use them */
+-#ifdef HAVE_BCOPY
+-#ifndef MEM_COPY
+-/* nonstandard copy function */
+-#define	MEM_COPY(from,to,size)	bcopy((char *)(from),(char *)(to),(int)(size))
+-#endif
+-#endif
+-
+-#ifdef HAVE_BZERO
+-#ifndef MEM_ZERO
+-/* nonstandard zero function */
+-#define	MEM_ZERO(where,size)	bzero((char *)(where),(int)(size))
+-#endif
+-#endif
+-
+-/* if the system has complex.h */
+-#ifdef HAVE_COMPLEX_H
+-#include	<complex.h>
+-#endif
+-
+-/* If prototypes are available & ANSI_C not yet defined, then define it,
+-	but don't include any header files as the proper ANSI C headers
+-        aren't here */
+-#define HAVE_PROTOTYPES 1
+-#ifdef HAVE_PROTOTYPES
+-#ifndef ANSI_C
+-#define ANSI_C  1
+-#endif
+-#endif
+-
+-/* floating point precision */
+-
+-/* you can choose single, double or long double (if available) precision */
+-
+-#define FLOAT 		1
+-#define DOUBLE 		2
+-#define LONG_DOUBLE 	3
+-
+-/* #undef REAL_FLT */
+-/* #undef REAL_DBL */
+-
+-/* if nothing is defined, choose double precision */
+-#ifndef REAL_DBL
+-#ifndef REAL_FLT
+-#define REAL_DBL 1
+-#endif
+-#endif
+-
+-/* single precision */
+-#ifdef REAL_FLT
+-#define  Real float
+-#define  LongReal float
+-#define REAL FLOAT
+-#define LONGREAL FLOAT
+-#endif
+-
+-/* double precision */
+-#ifdef REAL_DBL
+-#define Real double
+-#define LongReal double
+-#define REAL DOUBLE
+-#define LONGREAL DOUBLE
+-#endif
+-
+-
+-/* machine epsilon or unit roundoff error */
+-/* This is correct on most IEEE Real precision systems */
+-#ifdef DBL_EPSILON
+-#if REAL == DOUBLE
+-#define	MACHEPS	DBL_EPSILON
+-#elif REAL == FLOAT
+-#define	MACHEPS	FLT_EPSILON
+-#elif REAL == LONGDOUBLE
+-#define MACHEPS LDBL_EPSILON
+-#endif
+-#endif
+-
+-#define F_MACHEPS 1.19209e-07
+-#define D_MACHEPS 2.22045e-16
+-
+-#ifndef MACHEPS
+-#if REAL == DOUBLE
+-#define	MACHEPS	D_MACHEPS
+-#elif REAL == FLOAT  
+-#define MACHEPS F_MACHEPS
+-#elif REAL == LONGDOUBLE
+-#define MACHEPS D_MACHEPS
+-#endif
+-#endif
+-
+-/* #undef M_MACHEPS */
+-
+-/********************
+-#ifdef DBL_EPSILON
+-#define	MACHEPS	DBL_EPSILON
+-#endif
+-#ifdef M_MACHEPS
+-#ifndef MACHEPS
+-#define MACHEPS	M_MACHEPS
+-#endif
+-#endif
+-********************/
+-
+-#define	M_MAX_INT 2147483647
+-#ifdef	M_MAX_INT
+-#ifndef MAX_RAND
+-#define	MAX_RAND ((double)(M_MAX_INT))
+-#endif
+-#endif
+-
+-/* for non-ANSI systems */
+-#ifndef HUGE_VAL
+-#define HUGE_VAL HUGE
+-#endif
+-
+-
+-#ifdef ANSI_C
+-extern	int	isatty(int);
+-#endif
+-
+diff --git a/machine.h.in b/machine.h.in
+--- a/machine.h.in
++++ b/machine.h.in
+@@ -14,22 +14,121 @@
+ #ifndef _MACHINE_H
+ #define _MACHINE_H 1
+ 
++/* char '\0' is same as float zeros */
++#undef CHAR0ISDBL0
++
++/* incorporate complex functions */
++#undef COMPLEX
++
++/* machine epsilon for double */
++#undef D_MACHEPS
++
++/* machine epsilon for single */
++#undef F_MACHEPS
++
++/* Define to 1 if you have the `bcopy' function. */
++#undef HAVE_BCOPY
++
++/* Define to 1 if you have the `bzero' function. */
++#undef HAVE_BZERO
++
++/* Define to 1 if you have the <complex.h> header file. */
++#undef HAVE_COMPLEX_H
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#undef HAVE_INTTYPES_H
++
++/* Define to 1 if you have the `m' library (-lm). */
++#undef HAVE_LIBM
++
++/* Define to 1 if you have the <malloc.h> header file. */
++#undef HAVE_MALLOC_H
++
++/* Define to 1 if you have the <memory.h> header file. */
++#undef HAVE_MEMORY_H
++
++/* Function prototypes supported */
++#undef HAVE_PROTOTYPES
++
++/* Function prototypes allowed in structures */
++#undef HAVE_PROTOTYPES_IN_STRUCT
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#undef HAVE_STDINT_H
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#undef HAVE_STDLIB_H
++
++/* Define to 1 if you have the <strings.h> header file. */
++#undef HAVE_STRINGS_H
++
++/* Define to 1 if you have the <string.h> header file. */
++#undef HAVE_STRING_H
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#undef HAVE_SYS_STAT_H
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#undef HAVE_SYS_TYPES_H
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#undef HAVE_UNISTD_H
++
++/* unroll low level loops on matrices */
++#undef MUNROLL
++
++/* max integer?? */
++#undef M_MAX_INT
++
++/* Not segemented??? */
++#undef NOT_SEGMENTED
++
++/* Define to the address where bug reports for this package should be sent. */
++#undef PACKAGE_BUGREPORT
++
++/* Define to the full name of this package. */
++#undef PACKAGE_NAME
++
++/* Define to the full name and version of this package. */
++#undef PACKAGE_STRING
++
++/* Define to the one symbol short name of this package. */
++#undef PACKAGE_TARNAME
++
++/* Define to the version of this package. */
++#undef PACKAGE_VERSION
++
++/* double precision */
++#undef REAL_DBL
++
++/* single precision */
++#undef REAL_FLT
++
++/* incorporate sparse functions */
++#undef SPARSE
++
++/* Define to 1 if you have the ANSI C header files. */
++#undef STDC_HEADERS
++
++/* u_int type defined */
++#undef U_INT_DEF
++
++/* varargs.h present */
++#undef VARARGS
++
++/* unroll low level loops on vectors */
++#undef VUNROLL
++
++/* Define to 1 if your processor stores words with the most significant byte
++   first (like Motorola and SPARC, unlike Intel and VAX). */
++#undef WORDS_BIGENDIAN
++
++/* Define to empty if `const' does not conform to ANSI C. */
+ #undef const
+ 
+-#undef MALLOCDECL
+-#undef NOT_SEGMENTED
+-#undef HAVE_MEMORY_H
+-#undef HAVE_COMPLEX_H
+-#undef HAVE_MALLOC_H
+-#undef STDC_HEADERS
+-#undef HAVE_BCOPY
+-#undef HAVE_BZERO
+-#undef CHAR0ISDBL0
+-#undef WORDS_BIGENDIAN
+-#undef U_INT_DEF
+-#undef VARARGS
+-#undef HAVE_PROTOTYPES
+-#undef HAVE_PROTOTYPES_IN_STRUCT
++/* Define to `unsigned' if <sys/types.h> does not define. */
++#undef size_t
++
+ 
+ /* for inclusion into C++ files */
+ #ifdef __cplusplus
+diff --git a/makefile b/makefile
+deleted file mode 100644
+--- a/makefile
++++ /dev/null
+@@ -1,202 +0,0 @@
+-# Generated automatically from makefile.in by configure.
+-#
+-# Makefile for Meschach via autoconf
+-#
+-# Copyright (C) David Stewart & Zbigniew Leyk 1993
+-#
+-# $Id: $
+-#
+-
+-srcdir = .
+-VPATH = .
+-
+-CC = cc
+-
+-DEFS = -DHAVE_CONFIG_H
+-LIBS =  -lm 
+-RANLIB = ranlib
+-
+-
+-# CFLAGS = -O -g
+-# CFLAGS = -pg -g
+-CFLAGS = -O
+-
+-
+-.c.o:
+-	$(CC) -c $(CFLAGS) $(DEFS) $<
+-
+-SHELL = /bin/sh
+-MES_PAK = mesch12a
+-TAR = tar
+-SHAR = stree -u
+-ZIP = zip -r -l
+-FLIST = FILELIST
+-
+-###############################
+-
+-LIST1 = copy.o err.o matrixio.o memory.o vecop.o matop.o pxop.o \
+-	submat.o init.o otherio.o machine.o matlab.o ivecop.o version.o \
+-	meminfo.o memstat.o
+-LIST2 = lufactor.o bkpfacto.o chfactor.o qrfactor.o solve.o hsehldr.o \
+-	givens.o update.o norm.o hessen.o symmeig.o schur.o svd.o fft.o \
+-	mfunc.o bdfactor.o
+-LIST3 = sparse.o sprow.o sparseio.o spchfctr.o splufctr.o \
+-	spbkp.o spswap.o iter0.o itersym.o iternsym.o
+-ZLIST1 = zmachine.o zcopy.o zmatio.o zmemory.o zvecop.o zmatop.o znorm.o \
+-	 zfunc.o 
+-ZLIST2 = zlufctr.o zsolve.o zmatlab.o zhsehldr.o zqrfctr.o \
+-         zgivens.o  zhessen.o zschur.o
+-
+-# they are no longer supported
+-# if you use them add oldpart to all and sparse
+-OLDLIST = conjgrad.o lanczos.o arnoldi.o
+-
+-ALL_LISTS = $(LIST1) $(LIST2) $(LIST3) $(ZLIST1) $(ZLIST2) $(OLDLIST)
+-
+-HBASE = err.h meminfo.h machine.h matrix.h
+-
+-HLIST = $(HBASE) iter.h matlab.h matrix2.h  oldnames.h sparse.h \
+-	sparse2.h  zmatrix.h zmatrix2.h
+-
+-TORTURE = torture.o sptort.o ztorture.o memtort.o itertort.o \
+-	 mfuntort.o iotort.o
+-
+-OTHERS = dmacheps.c extras.c fmacheps.c maxint.c  makefile.in \
+-	 README configure configure.in machine.h.in copyright \
+-	 tutorial.c tutadv.c rk4.dat ls.dat makefile $(FLIST)
+-
+-
+-# Different configurations
+-all:  part1 part2 part3 zpart1 zpart2 
+-basic: part1 part2
+-sparse: part1 part2 part3 
+-complex: part1 part2 zpart1 zpart2
+-
+-
+-$(LIST1): $(HBASE)
+-part1: $(LIST1)
+-	ar ru meschach.a $(LIST1); $(RANLIB) meschach.a
+-
+-$(LIST2): $(HBASE) matrix2.h
+-part2: $(LIST2)
+-	ar ru meschach.a $(LIST2); $(RANLIB) meschach.a
+-
+-$(LIST3): $(HBASE) sparse.h sparse2.h
+-part3: $(LIST3)
+-	ar ru meschach.a $(LIST3); $(RANLIB) meschach.a
+-
+-$(ZLIST1): $(HBASDE) zmatrix.h
+-zpart1: $(ZLIST1)
+-	ar ru meschach.a $(ZLIST1); $(RANLIB) meschach.a
+-
+-$(ZLIST2): $(HBASE) zmatrix.h zmatrix2.h 
+-zpart2: $(ZLIST2)
+-	ar ru meschach.a $(ZLIST2); $(RANLIB) meschach.a
+-
+-$(OLDLIST): $(HBASE) sparse.h sparse2.h 
+-oldpart: $(OLDLIST)
+-	ar ru meschach.a $(OLDLIST); $(RANLIB) meschach.a
+-
+-
+-
+-#######################################
+-
+-tar:
+-	- /bin/rm -f $(MES_PAK).tar
+-	chmod 644 `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(OTHERS) $(HLIST)  `echo $(TORTURE) | sed -e 's/\.o/.c/g'` 
+-	chmod 755 configure
+-	$(MAKE) list
+-	$(TAR) cvf $(MES_PAK).tar \
+-	 `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(HLIST)  $(OTHERS) \
+-	`echo $(TORTURE) | sed -e 's/\.o/.c/g'` \
+-	MACHINES DOC
+-
+-# use this only for PC machines	
+-msdos-zip:
+-	- /bin/rm -f $(MES_PAK).zip
+-	chmod 644 `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(OTHERS) $(HLIST) `echo $(TORTURE) | sed -e 's/\.o/.c/g'` 
+-	chmod 755 configure
+-	$(MAKE) list
+-	$(ZIP)  $(MES_PAK).zip \
+-	 `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(HLIST)  $(OTHERS) `echo $(TORTURE) | sed -e 's/\.o/.c/g'` \
+-	MACHINES DOC
+-	
+-
+-fullshar:
+-	- /bin/rm -f $(MES_PAK).shar;
+-	chmod 644 `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(OTHERS) $(HLIST) `echo $(TORTURE) | sed -e 's/\.o/.c/g'` 
+-	chmod 755 configure
+-	$(MAKE) list
+-	$(SHAR) `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(HLIST)  $(OTHERS) `echo $(TORTURE) | sed -e 's/\.o/.c/g'` \
+-	MACHINES DOC > $(MES_PAK).shar
+-
+-shar:
+-	- /bin/rm -f meschach1.shar meschach2.shar meschach3.shar \
+-	meschach4.shar oldmeschach.shar meschach0.shar 
+-	chmod 644 `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	$(OTHERS) $(HLIST) `echo $(TORTURE) | sed -e 's/\.o/.c/g'` 
+-	chmod 755 configure	
+-	$(MAKE) list
+-	$(SHAR) `echo $(LIST1) | sed -e 's/\.o/.c/g'` > meschach1.shar
+-	$(SHAR) `echo $(LIST2) | sed -e 's/\.o/.c/g'` > meschach2.shar
+-	$(SHAR) `echo $(LIST3) | sed -e 's/\.o/.c/g'` > meschach3.shar	
+-	$(SHAR) `echo $(ZLIST1) | sed -e 's/\.o/.c/g'` \
+-	  `echo $(ZLIST2) | sed -e 's/\.o/.c/g'` > meschach4.shar
+-	$(SHAR) `echo $(OLDLIST) | sed -e 's/\.o/.c/g'` > oldmeschach.shar
+-	$(SHAR) $(OTHERS) `echo $(TORTURE) | sed -e 's/\.o/.c/g'` \
+-	  $(HLIST)  DOC MACHINES  > meschach0.shar
+-
+-list:
+-	/bin/rm -f $(FLIST)
+-	ls -lR `echo $(ALL_LISTS) | sed -e 's/\.o/.c/g'` \
+-	`echo $(TORTURE) | sed -e 's/\.o/.c/g'` \
+-	$(HLIST) $(OTHERS) MACHINES DOC \
+-	|awk '/^$$/ {print};/^[-d]/ {printf("%s %s   %10d %s %s %s %s\n", \
+-	 $$1,$$2,$$5,$$6,$$7,$$8,$$9)}; /^[^-d]/ {print}' \
+-	> $(FLIST)
+-
+-
+-
+-clean:
+-	/bin/rm -f *.o core asx5213a.mat iotort.dat 
+-
+-cleanup:
+-	/bin/rm -f *.o core asx5213a.mat iotort.dat *.a 
+-
+-alltorture: torture sptort ztorture memtort itertort mfuntort iotort
+-
+-torture:torture.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o torture torture.o \
+-	meschach.a $(LIBS)
+-sptort:sptort.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o sptort sptort.o \
+-	meschach.a $(LIBS)
+-memtort: memtort.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o memtort memtort.o \
+-	meschach.a $(LIBS)
+-ztorture:ztorture.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o ztorture ztorture.o \
+-	meschach.a $(LIBS)
+-itertort: itertort.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o itertort itertort.o \
+-	meschach.a $(LIBS)
+-
+-iotort: iotort.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o iotort iotort.o \
+-	meschach.a $(LIBS)
+-mfuntort: mfuntort.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o mfuntort mfuntort.o \
+-	meschach.a $(LIBS)
+-tstmove: tstmove.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o tstmove tstmove.o \
+-	meschach.a $(LIBS)
+-tstpxvec: tstpxvec.o meschach.a
+-	$(CC) $(CFLAGS) $(DEFS) -o tstpxvec tstpxvec.o \
+-	meschach.a $(LIBS)
+-
+diff --git a/makefile.in b/makefile.in
+--- a/makefile.in
++++ b/makefile.in
+@@ -14,9 +14,13 @@
+ DEFS = @DEFS@
+ LIBS = @LIBS@
+ RANLIB = @RANLIB@
++WITH_SPARSE = @WITH_SPARSE@
++WITH_COMPLEX = @WITH_COMPLEX@
+ 
+ 
+-CFLAGS = -O
++# FIXME: change this to be compiler specific. other compilers may not
++# have GCC's -Os (optimize for size)
++CFLAGS = -Os
+ 
+ 
+ .c.o:
+@@ -37,12 +41,17 @@
+ LIST2 = lufactor.o bkpfacto.o chfactor.o qrfactor.o solve.o hsehldr.o \
+ 	givens.o update.o norm.o hessen.o symmeig.o schur.o svd.o fft.o \
+ 	mfunc.o bdfactor.o
++
++ifeq (1,$(WITH_SPARSE))
+ LIST3 = sparse.o sprow.o sparseio.o spchfctr.o splufctr.o \
+ 	spbkp.o spswap.o iter0.o itersym.o iternsym.o
++endif
++ifeq (1,$(WITH_COMPLEX))
+ ZLIST1 = zmachine.o zcopy.o zmatio.o zmemory.o zvecop.o zmatop.o znorm.o \
+ 	 zfunc.o 
+ ZLIST2 = zlufctr.o zsolve.o zmatlab.o zhsehldr.o zqrfctr.o \
+          zgivens.o  zhessen.o zschur.o
++endif
+ 
+ # they are no longer supported
+ # if you use them add oldpart to all and sparse
+@@ -65,7 +74,7 @@
+ 
+ # Different configurations
+ # the dependencies **between** the parts are for dmake
+-all: @PROGS@ part1 part2 part3 zpart1 zpart2 
++all: part1 part2 part3 zpart1 zpart2 
+ part2: part1
+ part3: part2
+ basic: part1 part2
+@@ -85,19 +94,34 @@
+ 	$(RANLIB) meschach.a
+ 
+ $(LIST3): $(HBASE) sparse.h sparse2.h
++ifeq (1,$(WITH_SPARSE))
+ part3: $(LIST3)
+ 	ar ru meschach.a $(LIST3)
+ 	$(RANLIB) meschach.a
++else
++part3:
++	true
++endif
+ 
+ $(ZLIST1): $(HBASDE) zmatrix.h
++ifeq (1,$(WITH_COMPLEX))
+ zpart1: $(ZLIST1)
+ 	ar ru meschach.a $(ZLIST1)
+ 	$(RANLIB) meschach.a
++else
++zpart1:
++	true
++endif
+ 
+ $(ZLIST2): $(HBASE) zmatrix.h zmatrix2.h 
++ifeq (1,$(WITH_COMPLEX))
+ zpart2: $(ZLIST2)
+ 	ar ru meschach.a $(ZLIST2)
+ 	$(RANLIB) meschach.a
++else
++zpart2:
++	true
++endif
+ 
+ $(OLDLIST): $(HBASE) sparse.h sparse2.h 
+ oldpart: $(OLDLIST)
+diff --git a/maxint.c b/maxint.c
+--- a/maxint.c
++++ b/maxint.c
+@@ -23,6 +23,7 @@
+ **
+ ***************************************************************************/
+ 
++#include <stdio.h>
+ 
+ main()
+ {
